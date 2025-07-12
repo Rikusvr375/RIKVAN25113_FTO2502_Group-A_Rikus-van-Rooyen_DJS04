@@ -7,13 +7,13 @@ const PodcastCard = ({ podcast, onSelect, genres }) => {
   const updatedDate = DateUtils.format(podcast.updated || new Date().toISOString());
   console.log('Podcast in Card:', podcast); // Debug the podcast object
 
-  const seasonCount = Array.isArray(podcast.seasons) ? podcast.seasons.length : podcast.seasons || 0;
+  let seasonCount = podcast.seasons && Array.isArray(podcast.seasons) ? podcast.seasons.length : (typeof podcast.seasons === 'number' ? podcast.seasons : 0);
 
   return (
     <div className="card" onClick={() => onSelect(podcast)}>
       <img src={podcast.image || ''} alt={`${podcast.title || 'Podcast'} cover`} />
       <h3>{podcast.title || 'No Title'}</h3>
-      <p className="seasons">{seasonCount} season{seasonCount > 1 ? 's' : ''}</p>
+      <p className="seasons">{seasonCount} seasons{seasonCount > 1 ? 's' : ''}</p>
       <div className="tags">
         {genreNames.length > 0 ? (
           genreNames.map((genre) => (

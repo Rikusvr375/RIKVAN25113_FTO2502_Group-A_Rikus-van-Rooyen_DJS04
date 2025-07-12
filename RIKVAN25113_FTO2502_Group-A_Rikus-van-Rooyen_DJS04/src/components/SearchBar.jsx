@@ -8,65 +8,44 @@ import React from 'react';
  * @param {function} props.onPodcastSelect - Callback to select a podcast.
  * @param {Array<Object>} props.genres - The list of available genres.
  * @param {function} props.setCurrentPodcasts - Callback to update the current podcasts list.
+ * @param {number} props.currentPage - The current page number.
+ * @param {function} props.setCurrentPage - Callback to update the current page.
+ * @param {number} props.itemsPerPage - The number of items per page.
  * @returns {JSX.Element} The rendered search bar component.
  */
-const SearchBar = ({ podcasts, onPodcastSelect, genres, setCurrentPodcasts }) => {
-  /**
-   * State to store the current search term for filtering podcasts by title.
-   * @type {string}
-   */
+const SearchBar = ({ podcasts, onPodcastSelect, genres, setCurrentPodcasts, currentPage, setCurrentPage, itemsPerPage }) => {
   const [searchTerm, setSearchTerm] = React.useState('');
-
-  /**
-   * State to store the current page number for pagination.
-   * @type {number}
-   */
-  const [currentPage, setCurrentPage] = React.useState(1);
-
-  /**
-   * Constant defining the number of items per page for pagination.
-   * @type {number}
-   */
-  const [itemsPerPage] = React.useState(10);
-
-  /**
-   * State to store the selected genre ID for filtering podcasts.
-   * @type {number|null}
-   */
   const [selectedGenre, setSelectedGenre] = React.useState(null);
 
-  /**
-   * Handler for updating the search term and resetting the page.
-   * @param {string} value - The current value of the search input.
-   */
   const handleSearch = (value) => {
     setSearchTerm(value);
     setCurrentPage(1); // Reset to first page on new search
+    console.log('Search Term:', value); // Debug
   };
 
-  /**
-   * Filters the podcasts based on the search term and selected genre.
-   * @type {Array<Object>}
-   */
-  const filteredPodcasts = podcasts.filter(podcast =>
-    podcast.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-  if (selectedGenre) {
-    filteredPodcasts.filter(podcast =>
-      podcast.genres && podcast.genres.includes(selectedGenre)
+  // Use useMemo for efficient filtering
+  const filteredPodcasts = React.useMemo(() => {
+    let result = podcasts.filter(podcast =>
+      podcast.title?.toLowerCase().includes(searchTerm.toLowerCase()) || ''
     );
-  }
+    if (selectedGenre) {
+      result = result.filter(podcast =>
+        podcast.genres?.includes(selectedGenre) || false
+      );
+    }
+    console.log('Filtered Podcasts:', result); // Debug
+    return result;
+  }, [podcasts, searchTerm, selectedGenre]);
 
-  /**
-   * Calculates the slice of podcasts for the current page and updates the parent.
-   */
+  // Update current podcasts and total pages
   React.useEffect(() => {
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentPodcasts = filteredPodcasts.slice(indexOfFirstItem, indexOfLastItem);
     const totalPages = Math.ceil(filteredPodcasts.length / itemsPerPage);
     setCurrentPodcasts({ currentPodcasts, totalPages });
-  }, [searchTerm, selectedGenre, currentPage, itemsPerPage, podcasts, setCurrentPodcasts]);
+    console.log('Current Podcasts:', currentPodcasts); // Debug
+  }, [searchTerm, selectedGenre, currentPage, itemsPerPage, filteredPodcasts, setCurrentPodcasts]);
 
   return (
     <>
@@ -94,7 +73,7 @@ const SearchBar = ({ podcasts, onPodcastSelect, genres, setCurrentPodcasts }) =>
         <button
           onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
           disabled={currentPage === 1}
-          style={{ padding: '0.5rem 1rem', marginRight: '0.5rem' }}
+          style={{ padding: '0.5rem 1rem', marginRight: '0.5rem', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
         >
           Previous
         </button>
@@ -102,9 +81,9 @@ const SearchBar = ({ podcasts, onPodcastSelect, genres, setCurrentPodcasts }) =>
         <button
           onClick={() => setCurrentPage(prev => prev + 1)}
           disabled={currentPage === Math.ceil(filteredPodcasts.length / itemsPerPage)}
-          style={{ padding: '0.5rem 1rem', marginLeft: '0.5rem' }}
+          style={{ padding: '0.5rem 1rem', marginLeft: '0.5rem', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
         >
-          Next
+          Load More
         </button>
       </div>
     </>
