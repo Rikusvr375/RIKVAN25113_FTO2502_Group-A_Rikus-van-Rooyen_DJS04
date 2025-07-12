@@ -37,7 +37,7 @@ const App = () => {
               const seasonsData = await seasonsResponse.json();
               updatedPodcast = { ...updatedPodcast, seasons: seasonsData };
             } else {
-              const fallbackResponse = await fetch(`https://podcast-api.netlify.app/shows/${podcast.id}/seasons`);
+              const fallbackResponse = await fetch(`https://podcast-api.netlify.app/seasons/${podcast.id}/seasons`);
               if (fallbackResponse.ok) {
                 updatedPodcast = { ...updatedPodcast, seasons: await fallbackResponse.json() };
               } else {
